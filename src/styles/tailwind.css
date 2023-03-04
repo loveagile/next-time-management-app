@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply text-[#7d818b];
+  background: #f9f9f9;
+}
+
+.ant-btn-primary {
+  background-color: #1677ff !important;
+}
+
+.button:disabled {
+  cursor: not-allowed !important;
+}
