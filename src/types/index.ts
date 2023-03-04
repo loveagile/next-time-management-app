@@ -10,4 +10,5 @@ export interface Schedule {
   name: string;
   date: string;
   service: Event;
+  url?: File & { preview: string };
 }

@@ -1,17 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
-import Head from "next/head";
-import Image from "next/image";
-import { Inter } from "next/font/google";
-import { Modal, Button, Input } from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
+import { useState } from "react";
+import { Modal, Button } from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
-import { useSchedules } from "@/provider/SchedulesProvider";
 import { useEvents } from "@/provider/EventsProvider";
+import EventModal from "../modal/EventModal";
 
-import { Schedule, Event } from "../../types/index";
-
-const inter = Inter({ subsets: ["latin"] });
+import { Event } from "../../types/index";
 
 const defaultEvent = {
   id: 0,
@@ -26,29 +20,19 @@ const EventComponent = () => {
   const [eventAddModalOpen, setEventAddModalOpen] = useState(false);
   const [eventEditModalOpen, setEventEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [eventStatus, setEventStatus] = useState(true);
-
-  const eventValidation = () => {
-    if (!event) {
-      setEventStatus(false);
-      return false;
-    }
-    setEventStatus(event.label !== "" && event.value !== "");
-    return event.label !== "" && event.value;
-  };
 
   // Adding Event
   const openEventAddModal = () => {
-    setEvent({ ...defaultEvent, id: events.length });
     setEventAddModalOpen(true);
   };
 
-  const handleAddEventOk = () => {
-    if (!eventValidation()) return;
+  const handleAddEventOk = (event: Event) => {
     addEvent(event);
-    setEvent(defaultEvent);
     setEventAddModalOpen(false);
-    setEventStatus(true);
+  };
+
+  const handleAddEventCancel = () => {
+    setEventAddModalOpen(false);
   };
 
   // Editing Event
@@ -57,17 +41,17 @@ const EventComponent = () => {
     setEventEditModalOpen(true);
   };
 
-  const handleEditEventOk = () => {
-    if (!eventValidation()) return;
+  const handleEditEventOk = (event: Event) => {
     updateEvent(event);
-    setEvent(defaultEvent);
     setEventEditModalOpen(false);
-    setEventStatus(true);
+  };
+
+  const handleEditEventCancel = () => {
+    setEventEditModalOpen(false);
   };
 
   // Deleting Event
   const openEventDeleteModal = (eventOne: Event) => {
-    console.log(eventOne);
     setEvent(eventOne);
     setDeleteModalOpen(true);
   };
@@ -77,12 +61,8 @@ const EventComponent = () => {
     setDeleteModalOpen(false);
   };
 
-  const handleEventCancel = () => {
-    setEvent(defaultEvent);
-    setEventAddModalOpen(false);
-    setEventEditModalOpen(false);
+  const handleEventDeleteCancel = () => {
     setDeleteModalOpen(false);
-    setEventStatus(true);
   };
 
   return (
@@ -136,70 +116,32 @@ const EventComponent = () => {
               );
             })
           ) : (
-            <div className="mt-16 text-center">There is no schedules yet</div>
+            <div className="mt-16 text-center">There is no Event yet</div>
           )}
         </div>
       </div>
 
-      <Modal
-        title="Edit Schedule"
-        open={eventAddModalOpen}
-        onOk={handleAddEventOk}
-        onCancel={handleEventCancel}
-        className="w-1/3"
-        destroyOnClose={true}
-      >
-        <div className="flex flex-col gap-5 py-10">
-          <Input
-            placeholder="Event Name"
-            size="large"
-            value={event.label}
-            onChange={(e) => {
-              setEvent({
-                ...event,
-                label: e.target.value,
-                value: e.target.value.replace(/ /g, "").toLowerCase(),
-              });
-            }}
-          />
-          {!eventStatus && (
-            <span className="text-red-600">All fields are required.</span>
-          )}
-        </div>
-      </Modal>
+      {/* Add Modal */}
+      <EventModal
+        eventOk={handleAddEventOk}
+        eventCancel={handleAddEventCancel}
+        modalOpen={eventAddModalOpen}
+      />
 
-      <Modal
-        title="Edit Schedule"
-        open={eventEditModalOpen}
-        onOk={handleEditEventOk}
-        onCancel={handleEventCancel}
-        className="w-1/3"
-        destroyOnClose={true}
-      >
-        <div className="flex flex-col gap-5 py-10">
-          <Input
-            placeholder="Event Name"
-            size="large"
-            value={event.label}
-            onChange={(e) => {
-              setEvent({
-                ...event,
-                label: e.target.value,
-                value: e.target.value.replace(/ /g, "").toLowerCase(),
-              });
-            }}
-          />
-          {!eventStatus && (
-            <span className="text-red-600">Event name is required.</span>
-          )}
-        </div>
-      </Modal>
+      {/* Edit Modal */}
+      <EventModal
+        eventOk={handleEditEventOk}
+        eventCancel={handleEditEventCancel}
+        modalOpen={eventEditModalOpen}
+        data={event}
+      />
 
+      {/* Delete Modal */}
       <Modal
-        title="Delete schedule"
+        title="Delete Event"
         open={deleteModalOpen}
         onOk={handleEventDeleteOk}
-        onCancel={handleEventCancel}
+        onCancel={handleEventDeleteCancel}
         className="w-1/3"
       ></Modal>
     </>

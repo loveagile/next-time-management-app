@@ -14,3 +14,7 @@ body {
 .button:disabled {
   cursor: not-allowed !important;
 }
+
+.dropdown-container {
+  @apply flex-1 flex flex-col items-center pt-5 border-2 rounded-sm border-slate-500 border-dashed bg-[#f2f2f2] text-[#bdbdbd] outline-none transition-all;
+}

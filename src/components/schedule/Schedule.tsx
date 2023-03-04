@@ -1,20 +1,14 @@
-import { useState, useEffect } from "react";
-import Head from "next/head";
-import Image from "next/image";
+import { useState } from "react";
 import { Inter } from "next/font/google";
-import { Radio, Modal, Button, Input, Select, DatePicker } from "antd";
-import {
-  EditOutlined,
-  DeleteOutlined,
-  PlusOutlined,
-  PoweroffOutlined,
-} from "@ant-design/icons";
+import { Modal, Button } from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 
 import { useSchedules } from "@/provider/SchedulesProvider";
-import { useEvents } from "@/provider/EventsProvider";
 
-import { Schedule, Event } from "../../types/index";
+import { Schedule } from "../../types/index";
+
+import ScheduleModal from "../modal/ScheduleModal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -33,33 +27,22 @@ const defaultSchedule = {
 const ScheduleComponent = () => {
   const { schedules, addSchedule, updateSchedule, deleteSchedule } =
     useSchedules();
-  const { events } = useEvents();
   const [schedule, setSchedule] = useState<Schedule>(defaultSchedule);
   const [scheduleAddModalOpen, setScheduleAddModalOpen] = useState(false);
   const [scheduleEditModalOpen, setScheduleEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [scheduleStatus, setScheduleStatus] = useState(true);
-
-  const scheduleValidation = () => {
-    if (!schedule) {
-      setScheduleStatus(false);
-      return false;
-    }
-    setScheduleStatus(schedule.name !== "" && schedule.service.value !== "");
-    return schedule.name !== "" && schedule.service.value !== "";
-  };
 
   // Adding Schedule
   const openScheduleAddModal = () => {
-    console.log(schedule);
-    setSchedule({ ...defaultSchedule, id: schedules.length });
     setScheduleAddModalOpen(true);
   };
 
-  const handleAddScheduleOk = () => {
-    if (!scheduleValidation()) return;
+  const handleAddScheduleOk = (schedule: Schedule) => {
     addSchedule(schedule);
-    setSchedule(defaultSchedule);
+    setScheduleAddModalOpen(false);
+  };
+
+  const handleAddScheduleCancel = () => {
     setScheduleAddModalOpen(false);
   };
 
@@ -69,12 +52,13 @@ const ScheduleComponent = () => {
     setScheduleEditModalOpen(true);
   };
 
-  const handleEditScheduleOk = () => {
-    if (!scheduleValidation()) return;
+  const handleEditScheduleOk = (schedule: Schedule) => {
     updateSchedule(schedule);
-    setSchedule(defaultSchedule);
     setScheduleEditModalOpen(false);
-    setScheduleStatus(true);
+  };
+
+  const handleEditScheduleCancel = () => {
+    setScheduleEditModalOpen(false);
   };
 
   // Deleting Schedule
@@ -86,15 +70,10 @@ const ScheduleComponent = () => {
   const handleScheduleDeleteOk = () => {
     deleteSchedule(schedule);
     setDeleteModalOpen(false);
-    setScheduleStatus(true);
   };
 
-  const handleScheduleCancel = () => {
-    setSchedule(defaultSchedule);
-    setScheduleAddModalOpen(false);
-    setScheduleEditModalOpen(false);
+  const handleScheduleDeleteCancel = () => {
     setDeleteModalOpen(false);
-    setScheduleStatus(true);
   };
 
   return (
@@ -150,98 +129,27 @@ const ScheduleComponent = () => {
         </div>
       </div>
 
-      <Modal
-        title="Add Schedule"
-        open={scheduleAddModalOpen}
-        onOk={handleAddScheduleOk}
-        onCancel={handleScheduleCancel}
-        className="w-1/3"
-        destroyOnClose={true}
-      >
-        <div className="flex flex-col gap-5 py-10">
-          <Input
-            placeholder="Event Name"
-            size="large"
-            value={schedule.name}
-            onChange={(e) => {
-              setSchedule({ ...schedule, name: e.target.value });
-            }}
-          />
-          <Select
-            className="w-full"
-            size="large"
-            defaultValue={events[0].value}
-            value={schedule.service.value}
-            allowClear
-            options={events}
-            onChange={(value) => {
-              setSchedule({
-                ...schedule,
-                service: events.filter((event) => event.value === value)[0],
-              });
-            }}
-          />
-          <DatePicker
-            size="large"
-            defaultValue={dayjs()}
-            onChange={(date, dateString) => {
-              setSchedule({ ...schedule, date: dateString });
-            }}
-          />
-          {!scheduleStatus && (
-            <span className="text-red-600">All fields are required.</span>
-          )}
-        </div>
-      </Modal>
+      {/* Add Modal */}
+      <ScheduleModal
+        scheduleOk={handleAddScheduleOk}
+        scheduleCancel={handleAddScheduleCancel}
+        modalOpen={scheduleAddModalOpen}
+      />
 
-      <Modal
-        title="Edit Schedule"
-        open={scheduleEditModalOpen}
-        onOk={handleEditScheduleOk}
-        onCancel={handleScheduleCancel}
-        className="w-1/3"
-        destroyOnClose={true}
-      >
-        <div className="flex flex-col gap-5 py-10">
-          <Input
-            placeholder="Event Name"
-            value={schedule.name}
-            onChange={(e) => {
-              setSchedule({ ...schedule, name: e.target.value });
-            }}
-          />
-          <Select
-            className="w-full"
-            defaultValue={events[0].value}
-            value={schedule.service.value}
-            allowClear
-            options={events}
-            onChange={(value) => {
-              setSchedule({
-                ...schedule,
-                service: events.filter((event) => event.value === value)[0],
-              });
-            }}
-          />
-          <DatePicker
-            defaultValue={
-              schedule.date ? dayjs(schedule.date, "YYYY-MM-DD") : dayjs()
-            }
-            onChange={(date, dateString) => {
-              setSchedule({ ...schedule, date: dateString });
-            }}
-          />
-          {!scheduleStatus && (
-            <span className="text-red-600">All fields are required.</span>
-          )}
-        </div>
-      </Modal>
+      {/* Edit Modal */}
+      <ScheduleModal
+        scheduleOk={handleEditScheduleOk}
+        scheduleCancel={handleEditScheduleCancel}
+        modalOpen={scheduleEditModalOpen}
+        data={schedule}
+      />
 
+      {/* Delete Modal */}
       <Modal
         title="Delete schedule"
         open={deleteModalOpen}
         onOk={handleScheduleDeleteOk}
-        onCancel={handleScheduleCancel}
+        onCancel={handleScheduleDeleteCancel}
         className="w-1/3"
       ></Modal>
     </>
