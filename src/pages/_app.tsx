@@ -1,6 +1,14 @@
-import '@/styles/globals.css'
-import type { AppProps } from 'next/app'
+import "@/styles/tailwind.css";
+import type { AppProps } from "next/app";
+import { SchedulesProvider } from "../provider/SchedulesProvider";
+import { EventsProvider } from "../provider/EventsProvider";
 
 export default function App({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />
+  return (
+    <SchedulesProvider>
+      <EventsProvider>
+        <Component {...pageProps} />
+      </EventsProvider>
+    </SchedulesProvider>
+  );
 }
